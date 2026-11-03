@@ -26,11 +26,11 @@ npm.cmd run preview
 - [x] **Phần 1:** khung React Router v6, kho 10.000 bài tập, danh sách ảo hóa, tìm kiếm debounce, lọc, sắp xếp và tối ưu render.
 - [x] **Phần 2:** đồng hồ buổi tập bằng Zustand, thanh đồng hồ và bài tập đã lưu với persist.
 - [x] **Phần 3:** giáo án với Context + useReducer, middleware log, sáng/tối và lazy loading.
-- [ ] **Phần 4:** tối thiểu 12 test bằng Vitest/Testing Library; coverage Lines ≥ 70% cho `features` và `utils`, ảnh `coverage.png`.
+- [x] **Phần 4:** 60 test bằng Vitest/Testing Library trong 15 file; coverage Lines 100% cho `features` và `utils`, ảnh `coverage.png`.
 
-Tại mốc Phần 3, cả bốn route đều có chức năng: kho bài tập, bài đã lưu, danh sách giáo án và chi tiết giáo án. Kho có thêm ô chọn Giáo án đang chọn và nút + Giáo án trên từng dòng. Thanh đồng hồ cố định ở đáy mọi trang; nút trên menu đổi giao diện sáng/tối.
+Đã hoàn thành cả bốn phần. Ứng dụng có kho bài tập, bài đã lưu, danh sách giáo án và chi tiết giáo án. Kho có ô chọn Giáo án đang chọn và nút + Giáo án trên từng dòng. Thanh đồng hồ cố định ở đáy mọi trang; nút trên menu đổi giao diện sáng/tối.
 
-Đã chuẩn bị script `test`, `coverage` và cấu hình jsdom/Testing Library theo đề. Bộ test nộp bài sẽ được viết ở Phần 4; ở mốc Phần 3, `npm test` chưa có file test nguồn để chạy. Các lượt kiểm tra hồi quy cục bộ ở Phần 1–3 được ghi nhận bên dưới.
+Bộ test nộp bài đặt cạnh nguồn trong `src`, tên test bằng tiếng Việt. `npm test`, `npm run coverage` và `npm run build` đều đã chạy thành công. Kết quả cuối cùng và ảnh coverage nằm ở mục Phần 4 bên dưới; các mục trước ghi lại cách tự kiểm tra từng phần.
 
 ## Phần 1: triển khai và tự kiểm tra
 
@@ -62,7 +62,7 @@ Chạy dev hoặc preview rồi kiểm tra:
 - 12 nhóm kiểm tra cục bộ trên Chrome và dữ liệu nguồn đều đạt: dữ liệu/định dạng, kích thước danh sách ảo, debounce, tìm theo tên/HLV, lọc nhóm cơ, trạng thái rỗng, hai cách sắp xếp, cuộn tới cuối, điều hướng/404 và giao diện 390px.
 - Chỉ 12 dòng bài tập tồn tại trong DOM khi mở trang; vẫn tối đa 15 dòng khi cuộn tới bài cuối.
 - Không có lỗi JavaScript hoặc `console.error` trong lượt kiểm tra trình duyệt.
-- Bộ test Vitest chính thức và báo cáo coverage thuộc Phần 4, chưa được triển khai tại mốc này.
+- Bộ test Vitest chính thức và báo cáo coverage được hoàn thiện ở Phần 4 bên dưới.
 
 ## Phần 2: đồng hồ và bài tập đã lưu
 
@@ -97,7 +97,7 @@ Chạy dev hoặc preview rồi kiểm tra:
 - 3 ca kiểm tra component bằng Vitest/Testing Library cục bộ đạt: không render lại kho/dòng/nút mỗi giây; StrictMode không nhân đôi interval và cleanup đầy đủ; lưu bài chỉ render lại đúng dòng đó.
 - 9 nhóm kiểm tra Chrome production đạt, gồm chạy 5 giây thật, tạm dừng 3 giây, tự chuyển bài, queue theo bộ lọc/sắp xếp, F5, Tập tất cả, chuyển route, trạng thái rỗng và màn hình 320/390px.
 - Không có lỗi JavaScript hoặc `console.error` trong lượt kiểm tra trình duyệt.
-- Bộ test nộp bài đặt cạnh nguồn và coverage sẽ hoàn thiện tại Phần 4.
+- Bộ test nộp bài đặt cạnh nguồn và coverage được ghi ở Phần 4 bên dưới.
 
 ## Phần 3: giáo án, Context và sáng/tối
 
@@ -134,7 +134,51 @@ Chạy dev hoặc preview rồi kiểm tra:
 - 14 ca kiểm tra cục bộ bằng Vitest/Testing Library đạt: 11 ca cho reducer, logger DEV/production, validation, Context, persist, chi tiết và theme; 3 ca hồi quy render/interval của Phần 2.
 - 10 nhóm kiểm tra trình duyệt đạt, gồm luồng đầy đủ theo ví dụ trong đề, đổi tên, xóa, F5, theme, lazy loading và bố cục 320/390px.
 - Kiểm tra lại 12 nhóm của Phần 1 và 9 nhóm của Phần 2 đều đạt; không có lỗi JavaScript hoặc `console.error` trong các lượt trình duyệt.
-- Bộ test nộp bài đặt cạnh nguồn, `npm test`, coverage và ảnh `coverage.png` sẽ hoàn thiện tại Phần 4.
+- Bộ test nộp bài đặt cạnh nguồn, `npm test`, coverage và ảnh `coverage.png` được hoàn thiện ở Phần 4 bên dưới.
+
+## Phần 4: kiểm thử và coverage
+
+Chạy tại thư mục dự án:
+
+```powershell
+npm.cmd test
+npm.cmd run coverage
+npm.cmd run build
+```
+
+Kết quả cuối: **15 file test, 60 test đều đạt**, build production và kiểm tra TypeScript thành công. Không cần chạy server hay kết nối API để chạy test. Các test dùng dữ liệu cố định, fake timers cho debounce/đồng hồ và `userEvent` cho tương tác form/nút.
+
+Các trường hợp bắt buộc trong đề đều có file tương ứng:
+
+| File test | Nội dung |
+| --- | --- |
+| `utils/format.test.ts` | 0 → 0:00, 67 → 1:07, 120 → 2:00. |
+| `data/exercises.test.ts` | 10.000 phần tử, ID duy nhất, thời lượng 30–120 giây, dữ liệu xác định. |
+| `features/routines/routineReducer.test.ts` | Tạo/đổi tên/xóa, thêm không trùng, bỏ bài, xóa ID không tồn tại, cập nhật bất biến. |
+| `features/session/useSessionStore.test.ts` | Reset bằng `setState` trong `beforeEach`; start đúng bài, tick tự chuyển, dừng ở cuối, quy tắc Trước, pause/resume và chống trùng queue. |
+| `hooks/useDebounce.test.ts` | `renderHook` + fake timers: trước 300ms vẫn cũ, sau 300ms có giá trị mới; gõ tiếp và unmount hủy timeout. |
+| `features/library/ExerciseRow.test.tsx` | Hiển thị tên/0:30; bấm Bắt đầu qua `getByRole` gọi `vi.fn()` đúng bài; các nút lưu/thêm và trạng thái khóa. |
+| `features/routines/RoutinesPage.test.tsx` | `userEvent`, helper `renderWithProviders`: tạo trống, tạo hợp lệ, tên trùng hoa thường và xóa. |
+
+Các file còn lại kiểm tra kho bài tập, logger, Context, chi tiết giáo án, persist bài đã lưu, giao diện sáng/tối, interval cleanup/StrictMode và cô lập render mỗi giây.
+
+`src/setupTests.ts` dọn component, localStorage, timer, spy và biến môi trường giữa các ca. `src/test/renderWithProviders.tsx` bọc RoutineProvider + MemoryRouter và cung cấp hàm reset store cho các test giao diện.
+
+### Coverage thực tế
+
+| Phạm vi | Lines đã chạy | Lines | Yêu cầu |
+| --- | ---: | ---: | ---: |
+| `src/features` — đủ 13 file nguồn | 240/240 | **100%** | ≥ 70% |
+| `src/utils` | 4/4 | **100%** | ≥ 70% |
+| Toàn bộ phạm vi đo | 244/244 | **100%** | ≥ 70% |
+
+Trong phạm vi trên: Statements **99,38%**, Branches **96,96%**, Functions **100%**. Cấu hình V8 đo tất cả mã nguồn trong `features` và `utils`, loại file test khỏi báo cáo, kiểm tra ngưỡng Lines 70% riêng cho hai thư mục và xuất text, HTML, JSON summary.
+
+- Báo cáo HTML: `coverage/index.html`, mở sau khi chạy coverage.
+- Số liệu JSON: `coverage/coverage-summary.json`.
+- Ảnh nộp bài: **`coverage.png` tại gốc repo**, chụp trực tiếp bảng HTML từ lượt chạy coverage trên; ảnh được đưa vào Git, thư mục báo cáo `coverage/` được bỏ qua.
+
+![Bảng coverage V8: features và utils đạt 100% Lines](coverage.png)
 
 ## Cấu trúc hiện tại
 
@@ -144,6 +188,7 @@ src/
   main.tsx                    StrictMode + BrowserRouter
   types.ts                    Kiểu Exercise, MuscleGroup, Routine
   setupTests.ts               Thiết lập Testing Library cho Vitest
+  test/renderWithProviders.tsx Helper Provider/Router và reset store
   styles.css                  Giao diện và bố cục màn hình nhỏ
   components/Icon.tsx         Biểu tượng SVG
   components/ThemeToggle.tsx  Nút đổi sáng/tối
@@ -170,7 +215,9 @@ src/
     RoutineDetailPage.tsx     Chi tiết, đổi tên, bỏ bài, tổng giờ và tập
 ```
 
-## Commit Phần 3
+15 file `*.test.ts` / `*.test.tsx` được đặt cạnh mã nguồn tương ứng. `coverage.png` ở gốc repo.
+
+## Commit Phần 4
 
 Repository Git cục bộ đã được khởi tạo trên nhánh `main`. Remote `origin` trỏ đến repository GitHub public [MeowChau/B23DCCC020_LTWNC_TH02](https://github.com/MeowChau/B23DCCC020_LTWNC_TH02).
 
@@ -178,10 +225,10 @@ Repository Git cục bộ đã được khởi tạo trên nhánh `main`. Remote
 cd D:\TH_Web_Nc\TH2\workout-timer
 git status
 git add .
-git commit -m "Phan 3"
+git commit -m "Phan 4"
 git push
 ```
 
-Giữ `package-lock.json` trong Git. `node_modules`, `dist`, báo cáo `coverage` và file kiểm tra cục bộ `.qa` được bỏ qua. Khi hoàn thành toàn bài, chạy cả `npm.cmd run build` và `npm.cmd test` trước khi nộp.
+Giữ `package-lock.json`, mã nguồn, toàn bộ test và `coverage.png` trong Git. `node_modules`, `dist`, báo cáo `coverage/` và file kiểm tra cục bộ `.qa` được bỏ qua. Khi thay đổi mã hoặc test, chạy lại các lệnh kiểm tra và cập nhật ảnh coverage trước khi nộp.
 
-Tham khảo: [React memo](https://react.dev/reference/react/memo), [Reducer và Context](https://react.dev/learn/scaling-up-with-reducer-and-context), [React lazy](https://react.dev/reference/react/lazy), [React Router v6](https://reactrouter.com/6.30.3/start/overview), [Vite](https://vite.dev/guide/), [react-window v1](https://github.com/bvaughn/react-window/tree/v1.8.11).
+Tham khảo: [React memo](https://react.dev/reference/react/memo), [Reducer và Context](https://react.dev/learn/scaling-up-with-reducer-and-context), [React lazy](https://react.dev/reference/react/lazy), [React Router v6](https://reactrouter.com/6.30.3/start/overview), [Vite](https://vite.dev/guide/), [react-window v1](https://github.com/bvaughn/react-window/tree/v1.8.11), [Vitest coverage](https://vitest.dev/config/coverage), [Vitest timers](https://vitest.dev/guide/mocking/timers), [Testing Library fake timers](https://testing-library.com/docs/using-fake-timers/).
