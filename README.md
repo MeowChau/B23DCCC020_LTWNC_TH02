@@ -25,12 +25,12 @@ npm.cmd run preview
 
 - [x] **Phần 1:** khung React Router v6, kho 10.000 bài tập, danh sách ảo hóa, tìm kiếm debounce, lọc, sắp xếp và tối ưu render.
 - [x] **Phần 2:** đồng hồ buổi tập bằng Zustand, thanh đồng hồ và bài tập đã lưu với persist.
-- [ ] **Phần 3:** giáo án với Context + useReducer, middleware log, sáng/tối và lazy loading.
+- [x] **Phần 3:** giáo án với Context + useReducer, middleware log, sáng/tối và lazy loading.
 - [ ] **Phần 4:** tối thiểu 12 test bằng Vitest/Testing Library; coverage Lines ≥ 70% cho `features` và `utils`, ảnh `coverage.png`.
 
-Tại mốc Phần 2, ba nút Bắt đầu, ☆/★, + Buổi tập hoạt động ở kho bài tập và trang `/saved`. Thanh đồng hồ cố định ở đáy mọi trang. Các route `/routines`, `/routines/:id` vẫn là trang giữ chỗ, được triển khai ở Phần 3.
+Tại mốc Phần 3, cả bốn route đều có chức năng: kho bài tập, bài đã lưu, danh sách giáo án và chi tiết giáo án. Kho có thêm ô chọn Giáo án đang chọn và nút + Giáo án trên từng dòng. Thanh đồng hồ cố định ở đáy mọi trang; nút trên menu đổi giao diện sáng/tối.
 
-Đã chuẩn bị script `test`, `coverage` và cấu hình jsdom/Testing Library theo đề. Bộ test nộp bài sẽ được viết ở Phần 4; ở mốc Phần 2, `npm test` chưa có file test nguồn để chạy. Các lượt kiểm tra hồi quy cục bộ ở Phần 1–2 được ghi nhận bên dưới.
+Đã chuẩn bị script `test`, `coverage` và cấu hình jsdom/Testing Library theo đề. Bộ test nộp bài sẽ được viết ở Phần 4; ở mốc Phần 3, `npm test` chưa có file test nguồn để chạy. Các lượt kiểm tra hồi quy cục bộ ở Phần 1–3 được ghi nhận bên dưới.
 
 ## Phần 1: triển khai và tự kiểm tra
 
@@ -99,16 +99,55 @@ Chạy dev hoặc preview rồi kiểm tra:
 - Không có lỗi JavaScript hoặc `console.error` trong lượt kiểm tra trình duyệt.
 - Bộ test nộp bài đặt cạnh nguồn và coverage sẽ hoàn thiện tại Phần 4.
 
+## Phần 3: giáo án, Context và sáng/tối
+
+| Yêu cầu | Triển khai |
+| --- | --- |
+| Reducer thuần | `RoutineAction` là discriminated union với `create`, `rename`, `remove`, `addExercise`, `removeExercise`. Cập nhật bất biến; thêm trùng hoặc thao tác lên ID không tồn tại giữ nguyên state. |
+| Kiểm tra tên | Bỏ khoảng trắng đầu/cuối; chặn tên rỗng và trùng không phân biệt hoa thường, cả khi tạo và đổi tên. |
+| Logger | `withLogger(reducer)` trả đúng kết quả reducer và chỉ `console.log` tên action, state trước/sau khi `import.meta.env.DEV`. |
+| Tách Context | `RoutineStateContext` chứa mảng giáo án; `RoutineDispatchContext` chứa dispatch ổn định của `useReducer`. Các hook báo lỗi rõ nếu dùng ngoài Provider. |
+| Form tạo | Chỉ dùng `useRoutineDispatch()`, bọc `memo`, nhận validator ổn định qua `useCallback` và ref dữ liệu mới nhất; thay đổi danh sách không ép form render lại. |
+| Lưu giáo án | Đọc và ghi mảng giáo án bằng localStorage key `workout-routines`. Dữ liệu JSON hỏng không làm trang crash. |
+| Thêm bài | Kho có Giáo án đang chọn và + Giáo án; khóa khi chưa có giáo án, hiển thị số bài của giáo án đã chọn. |
+| Chi tiết | Giữ thứ tự bài được thêm, có nút Bỏ, tổng thời lượng tính bằng `reduce`, Tập tất cả dùng `startSession` của Zustand. ID lạ hiển thị Không tìm thấy giáo án. |
+| Theme riêng | `ThemeContext` có `theme`, `toggleTheme`; value bọc `useMemo`. Đặt `data-theme` trên phần tử gốc, ghi nhớ lựa chọn bằng `workout-theme`. |
+| Lazy route | `/saved`, `/routines`, `/routines/:id` dùng `React.lazy`, default export và `Suspense` với Đang tải trang...; mỗi trang có chunk JS riêng. |
+
+### Tự kiểm tra Phần 3
+
+1. Mở Giáo án, bấm Tạo khi chưa nhập: **Tên giáo án không được để trống**.
+2. Tạo **Ngày ngực**, sau đó tạo **ngày NGỰC**: **Tên giáo án đã tồn tại**. Thử tạo thêm **Ngày chân**.
+3. Về Kho bài tập, chọn Ngày ngực; bấm + Giáo án ở e1, e2, rồi e1 lần nữa: chỉ có **2 bài trong giáo án**.
+4. Mở Giáo án → Ngày ngực: có e1/e2, **Tổng thời gian: 1 phút 37 giây**. F5 vẫn đủ hai bài.
+5. Bấm Tập tất cả: thanh dưới có **Đang tập: Đẩy tạ đơn 1 – HLV Minh Khang**, **Buổi tập: 2 bài**.
+6. Thử đổi tên thành trống hoặc Ngày chân: báo lỗi tương ứng. Đổi thành tên mới hợp lệ: tiêu đề và danh sách cùng cập nhật.
+7. Bấm Bỏ ở e2: tổng còn **0 phút 30 giây**; bỏ hết: tổng **0 phút 0 giây**, Tập tất cả bị khóa. Buổi đã bắt đầu trước đó vẫn giữ queue riêng.
+8. Thử Xóa giáo án, rồi mở lại URL cũ: **Không tìm thấy giáo án**. Khi xóa hết, ô chọn và nút + Giáo án ở kho bị khóa.
+9. Bấm Giao diện tối/Giao diện sáng trên menu: toàn bộ các trang và thanh đồng hồ đổi màu; lựa chọn còn sau F5.
+10. Chạy `npm.cmd run dev`, mở Console và thêm bài vào giáo án: thấy `[routines] addExercise`, `stateBefore`, `stateAfter`. StrictMode ở bản dev có thể gọi reducer hai lần; production không ghi các log này.
+11. Chạy build/preview, mở Network và tải lại ở `/`: chưa tải chunk của ba trang phụ. Bấm từng menu/link mới tải `SavedPage-*.js`, `RoutinesPage-*.js`, `RoutineDetailPage-*.js` tương ứng.
+
+### Kết quả kiểm tra tại mốc Phần 3
+
+- Build production và TypeScript thành công; ba trang phụ được tách thành ba file JS riêng.
+- 14 ca kiểm tra cục bộ bằng Vitest/Testing Library đạt: 11 ca cho reducer, logger DEV/production, validation, Context, persist, chi tiết và theme; 3 ca hồi quy render/interval của Phần 2.
+- 10 nhóm kiểm tra trình duyệt đạt, gồm luồng đầy đủ theo ví dụ trong đề, đổi tên, xóa, F5, theme, lazy loading và bố cục 320/390px.
+- Kiểm tra lại 12 nhóm của Phần 1 và 9 nhóm của Phần 2 đều đạt; không có lỗi JavaScript hoặc `console.error` trong các lượt trình duyệt.
+- Bộ test nộp bài đặt cạnh nguồn, `npm test`, coverage và ảnh `coverage.png` sẽ hoàn thiện tại Phần 4.
+
 ## Cấu trúc hiện tại
 
 ```text
 src/
   App.tsx                     Khung trang và các route
   main.tsx                    StrictMode + BrowserRouter
-  types.ts                    Kiểu Exercise, MuscleGroup
+  types.ts                    Kiểu Exercise, MuscleGroup, Routine
   setupTests.ts               Thiết lập Testing Library cho Vitest
   styles.css                  Giao diện và bố cục màn hình nhỏ
   components/Icon.tsx         Biểu tượng SVG
+  components/ThemeToggle.tsx  Nút đổi sáng/tối
+  contexts/ThemeContext.tsx   Theme riêng, value được memo hóa
   data/exercises.ts           Bộ sinh dữ liệu và 10.000 bài tập
   hooks/useDebounce.ts        Hook debounce generic
   utils/format.ts             formatDuration
@@ -122,9 +161,16 @@ src/
   features/saved/
     useSavedStore.ts          ID bài đã lưu, middleware persist
     SavedPage.tsx             Danh sách đã lưu và Tập tất cả
+  features/routines/
+    routineReducer.ts         Action union, validation tên, reducer thuần
+    withLogger.ts             Middleware log khi DEV
+    RoutineContext.tsx        State/dispatch riêng và persist giáo án
+    RoutineCreateForm.tsx     Form chỉ đọc dispatch, được memo hóa
+    RoutinesPage.tsx          Tạo/xóa, danh sách giáo án
+    RoutineDetailPage.tsx     Chi tiết, đổi tên, bỏ bài, tổng giờ và tập
 ```
 
-## Commit Phần 2
+## Commit Phần 3
 
 Repository Git cục bộ đã được khởi tạo trên nhánh `main`. Remote `origin` trỏ đến repository GitHub public [MeowChau/B23DCCC020_LTWNC_TH02](https://github.com/MeowChau/B23DCCC020_LTWNC_TH02).
 
@@ -132,10 +178,10 @@ Repository Git cục bộ đã được khởi tạo trên nhánh `main`. Remote
 cd D:\TH_Web_Nc\TH2\workout-timer
 git status
 git add .
-git commit -m "Phan 2"
+git commit -m "Phan 3"
 git push
 ```
 
 Giữ `package-lock.json` trong Git. `node_modules`, `dist`, báo cáo `coverage` và file kiểm tra cục bộ `.qa` được bỏ qua. Khi hoàn thành toàn bài, chạy cả `npm.cmd run build` và `npm.cmd test` trước khi nộp.
 
-Tham khảo: [React memo](https://react.dev/reference/react/memo), [React Router v6](https://reactrouter.com/6.30.3/start/overview), [Vite](https://vite.dev/guide/), [react-window v1](https://github.com/bvaughn/react-window/tree/v1.8.11).
+Tham khảo: [React memo](https://react.dev/reference/react/memo), [Reducer và Context](https://react.dev/learn/scaling-up-with-reducer-and-context), [React lazy](https://react.dev/reference/react/lazy), [React Router v6](https://reactrouter.com/6.30.3/start/overview), [Vite](https://vite.dev/guide/), [react-window v1](https://github.com/bvaughn/react-window/tree/v1.8.11).

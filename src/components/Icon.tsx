@@ -12,6 +12,11 @@ const paths = {
   pause: 'M9 5v14M15 5v14',
   previous: 'M5 5v14m14-14L8 12l11 7V5Z',
   next: 'M19 5v14M5 5l11 7-11 7V5Z',
+  plus: 'M12 5v14M5 12h14',
+  trash: 'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7',
+  edit: 'm15 4 5 5M3 21l5-1L21 7a2 2 0 0 0-4-4L4 16l-1 5Z',
+  moon: 'M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z',
+  sun: 'M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z',
 } as const;
 
 interface IconProps extends SVGProps<SVGSVGElement> {

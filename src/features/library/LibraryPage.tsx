@@ -2,6 +2,7 @@ import { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } f
 import type { ChangeEvent, HTMLAttributes } from 'react';
 import { FixedSizeList, areEqual } from 'react-window';
 import type { ListChildComponentProps } from 'react-window';
+import { Link } from 'react-router-dom';
 import { Icon } from '../../components/Icon';
 import { EXERCISES, GROUPS } from '../../data/exercises';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -9,6 +10,7 @@ import type { Exercise, MuscleGroup } from '../../types';
 import ExerciseRow from './ExerciseRow';
 import { useSavedStore } from '../saved/useSavedStore';
 import { useSessionStore } from '../session/useSessionStore';
+import { useRoutineDispatch, useRoutines } from '../routines/RoutineContext';
 
 type SortOrder = 'default' | 'name' | 'duration';
 type GroupFilter = 'all' | MuscleGroup;
@@ -17,6 +19,7 @@ interface ExerciseListData {
   exercises: Exercise[];
   onStart: (exercise: Exercise) => void;
   onAddToSession: (exercise: Exercise) => void;
+  onAddToRoutine?: (exercise: Exercise) => void;
 }
 
 const ListViewport = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
@@ -34,7 +37,8 @@ const VirtualExerciseRow = memo(function VirtualExerciseRow({
   const handleToggleSaved = useCallback((id: string) => toggle(id), [toggle]);
   return (
     <ExerciseRow exercise={exercise} index={index} style={style} isSaved={isSaved}
-      onStart={data.onStart} onAddToSession={data.onAddToSession} onToggleSaved={handleToggleSaved} />
+      onStart={data.onStart} onAddToSession={data.onAddToSession} onToggleSaved={handleToggleSaved}
+      onAddToRoutine={data.onAddToRoutine} showRoutineAction />
   );
 }, areEqual);
 
@@ -46,10 +50,15 @@ export default function LibraryPage() {
   const [keyword, setKeyword] = useState('');
   const [group, setGroup] = useState<GroupFilter>('all');
   const [sort, setSort] = useState<SortOrder>('default');
+  const [selectedRoutineId, setSelectedRoutineId] = useState('');
   const debouncedKeyword = useDebounce(keyword, 300);
   const listRef = useRef<FixedSizeList<ExerciseListData>>(null);
   const startSession = useSessionStore((state) => state.startSession);
   const addToSession = useSessionStore((state) => state.addToSession);
+  const routines = useRoutines();
+  const dispatch = useRoutineDispatch();
+  const selectedRoutine = routines.find((routine) => routine.id === selectedRoutineId) ?? routines[0];
+  const activeRoutineId = selectedRoutine?.id ?? '';
 
   const filteredExercises = useMemo(() => {
     const query = debouncedKeyword.trim().toLocaleLowerCase('vi');
@@ -73,12 +82,19 @@ export default function LibraryPage() {
   }, [filteredExercises, startSession]);
 
   const handleAddToSession = useCallback((exercise: Exercise) => addToSession(exercise), [addToSession]);
+  const handleAddToRoutine = useCallback((exercise: Exercise) => {
+    if (activeRoutineId) dispatch({ type: 'addExercise', payload: { routineId: activeRoutineId, exerciseId: exercise.id } });
+  }, [activeRoutineId, dispatch]);
+  const handleRoutineChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedRoutineId(event.target.value);
+  }, []);
 
   const listData = useMemo<ExerciseListData>(() => ({
     exercises: filteredExercises,
     onStart: handleStart,
     onAddToSession: handleAddToSession,
-  }), [filteredExercises, handleStart, handleAddToSession]);
+    onAddToRoutine: activeRoutineId ? handleAddToRoutine : undefined,
+  }), [filteredExercises, handleStart, handleAddToSession, handleAddToRoutine, activeRoutineId]);
 
   useEffect(() => {
     listRef.current?.scrollToItem(0, 'start');
@@ -150,6 +166,17 @@ export default function LibraryPage() {
           </div>
         </div>
 
+        <div className="routine-picker">
+          <label htmlFor="selected-routine">Giáo án đang chọn</label>
+          <select id="selected-routine" value={activeRoutineId} onChange={handleRoutineChange} disabled={routines.length === 0}>
+            {routines.length === 0 && <option value="">Chưa có giáo án</option>}
+            {routines.map((routine) => <option key={routine.id} value={routine.id}>{routine.name}</option>)}
+          </select>
+          {selectedRoutine
+            ? <span className="routine-picker-count">{selectedRoutine.exerciseIds.length} bài trong giáo án</span>
+            : <Link className="text-link" to="/routines">Tạo giáo án đầu tiên <Icon name="arrow" width="15" height="15" /></Link>}
+        </div>
+
         <div className="results-toolbar">
           <p role="status" aria-live="polite">Tìm thấy <strong>{filteredExercises.length}</strong> bài tập</p>
           {hasFilters
@@ -159,7 +186,7 @@ export default function LibraryPage() {
 
         {filteredExercises.length > 0 ? (
           <div className="table-scroll">
-            <div className="exercise-table" role="table" aria-label="Kho bài tập" aria-rowcount={filteredExercises.length + 1} aria-colcount={6}>
+            <div className="exercise-table library-with-routines" role="table" aria-label="Kho bài tập" aria-rowcount={filteredExercises.length + 1} aria-colcount={6}>
               <div role="row" className="table-heading exercise-grid">
                 <span role="columnheader">#</span>
                 <span role="columnheader">Bài tập</span>

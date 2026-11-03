@@ -1,20 +1,25 @@
+import { lazy, Suspense } from 'react';
 import { Link, NavLink, Route, Routes } from 'react-router-dom';
 import type { NavLinkRenderProps } from 'react-router-dom';
 import { Icon } from './components/Icon';
 import LibraryPage from './features/library/LibraryPage';
-import SavedPage from './features/saved/SavedPage';
 import SessionBar from './features/session/SessionBar';
+import ThemeToggle from './components/ThemeToggle';
+
+const SavedPage = lazy(() => import('./features/saved/SavedPage'));
+const RoutinesPage = lazy(() => import('./features/routines/RoutinesPage'));
+const RoutineDetailPage = lazy(() => import('./features/routines/RoutineDetailPage'));
 
 function navLinkClass({ isActive }: NavLinkRenderProps): string {
   return isActive ? 'nav-link active' : 'nav-link';
 }
 
-function PendingPage({ title, description }: { title: string; description: string }) {
+function NotFoundPage() {
   return (
     <section className="placeholder-page">
       <span className="empty-icon"><Icon name="routines" width="28" height="28" /></span>
-      <h1>{title}</h1>
-      <p>{description}</p>
+      <h1>Không tìm thấy trang</h1>
+      <p>Đường dẫn này không tồn tại. Hãy quay lại kho bài tập.</p>
       <Link className="text-link" to="/">Khám phá kho bài tập <Icon name="arrow" /></Link>
     </section>
   );
@@ -35,18 +40,20 @@ export default function App() {
             <NavLink to="/saved" className={navLinkClass}><Icon name="saved" />Đã lưu</NavLink>
             <NavLink to="/routines" className={navLinkClass}><Icon name="routines" />Giáo án</NavLink>
           </nav>
-          <span className="header-note"><span />Mỗi ngày, một bước tiến.</span>
+          <ThemeToggle />
         </div>
       </header>
 
       <main id="main-content" className="main-container">
-        <Routes>
-          <Route path="/" element={<LibraryPage />} />
-          <Route path="/saved" element={<SavedPage />} />
-          <Route path="/routines" element={<PendingPage title="Giáo án" description="Không gian dành cho những buổi tập của riêng bạn." />} />
-          <Route path="/routines/:id" element={<PendingPage title="Chi tiết giáo án" description="Chọn một giáo án để xem các bài tập." />} />
-          <Route path="*" element={<PendingPage title="Không tìm thấy trang" description="Đường dẫn này không tồn tại. Hãy quay lại kho bài tập." />} />
-        </Routes>
+        <Suspense fallback={<p className="route-loading" role="status">Đang tải trang...</p>}>
+          <Routes>
+            <Route path="/" element={<LibraryPage />} />
+            <Route path="/saved" element={<SavedPage />} />
+            <Route path="/routines" element={<RoutinesPage />} />
+            <Route path="/routines/:id" element={<RoutineDetailPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
       </main>
 
       <footer className="site-footer">

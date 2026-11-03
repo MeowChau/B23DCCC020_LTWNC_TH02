@@ -11,14 +11,18 @@ export interface ExerciseRowProps {
   onStart?: (exercise: Exercise) => void;
   onToggleSaved?: (id: string) => void;
   onAddToSession?: (exercise: Exercise) => void;
+  onAddToRoutine?: (exercise: Exercise) => void;
+  showRoutineAction?: boolean;
 }
 
 const ExerciseRow = memo(function ExerciseRow({
   exercise, index, style, isSaved = false, onStart, onToggleSaved, onAddToSession,
+  onAddToRoutine, showRoutineAction = false,
 }: ExerciseRowProps) {
   const handleStart = useCallback(() => onStart?.(exercise), [onStart, exercise]);
   const handleToggleSaved = useCallback(() => onToggleSaved?.(exercise.id), [onToggleSaved, exercise.id]);
   const handleAddToSession = useCallback(() => onAddToSession?.(exercise), [onAddToSession, exercise]);
+  const handleAddToRoutine = useCallback(() => onAddToRoutine?.(exercise), [onAddToRoutine, exercise]);
 
   return (
     <div role="row" aria-rowindex={index + 2} style={style}
@@ -35,6 +39,10 @@ const ExerciseRow = memo(function ExerciseRow({
           onClick={handleToggleSaved}>{isSaved ? '★' : '☆'}</button>
         <button type="button" className="button-queue" disabled={!onAddToSession}
           onClick={handleAddToSession}>+ Buổi tập</button>
+        {showRoutineAction && (
+          <button type="button" className="button-queue button-routine" disabled={!onAddToRoutine}
+            onClick={handleAddToRoutine}>+ Giáo án</button>
+        )}
       </div>
     </div>
   );
