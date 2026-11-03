@@ -7,12 +7,16 @@ import { EXERCISES, GROUPS } from '../../data/exercises';
 import { useDebounce } from '../../hooks/useDebounce';
 import type { Exercise, MuscleGroup } from '../../types';
 import ExerciseRow from './ExerciseRow';
+import { useSavedStore } from '../saved/useSavedStore';
+import { useSessionStore } from '../session/useSessionStore';
 
 type SortOrder = 'default' | 'name' | 'duration';
 type GroupFilter = 'all' | MuscleGroup;
 
 interface ExerciseListData {
   exercises: Exercise[];
+  onStart: (exercise: Exercise) => void;
+  onAddToSession: (exercise: Exercise) => void;
 }
 
 const ListViewport = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
@@ -24,7 +28,14 @@ const ListViewport = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 const VirtualExerciseRow = memo(function VirtualExerciseRow({
   index, style, data,
 }: ListChildComponentProps<ExerciseListData>) {
-  return <ExerciseRow exercise={data.exercises[index]} index={index} style={style} />;
+  const exercise = data.exercises[index];
+  const isSaved = useSavedStore((state) => state.ids.includes(exercise.id));
+  const toggle = useSavedStore((state) => state.toggle);
+  const handleToggleSaved = useCallback((id: string) => toggle(id), [toggle]);
+  return (
+    <ExerciseRow exercise={exercise} index={index} style={style} isSaved={isSaved}
+      onStart={data.onStart} onAddToSession={data.onAddToSession} onToggleSaved={handleToggleSaved} />
+  );
 }, areEqual);
 
 function exerciseKey(index: number, data: ExerciseListData): string {
@@ -37,6 +48,8 @@ export default function LibraryPage() {
   const [sort, setSort] = useState<SortOrder>('default');
   const debouncedKeyword = useDebounce(keyword, 300);
   const listRef = useRef<FixedSizeList<ExerciseListData>>(null);
+  const startSession = useSessionStore((state) => state.startSession);
+  const addToSession = useSessionStore((state) => state.addToSession);
 
   const filteredExercises = useMemo(() => {
     const query = debouncedKeyword.trim().toLocaleLowerCase('vi');
@@ -55,7 +68,17 @@ export default function LibraryPage() {
     return result;
   }, [debouncedKeyword, group, sort]);
 
-  const listData = useMemo<ExerciseListData>(() => ({ exercises: filteredExercises }), [filteredExercises]);
+  const handleStart = useCallback((exercise: Exercise) => {
+    startSession(filteredExercises, filteredExercises.findIndex((item) => item.id === exercise.id));
+  }, [filteredExercises, startSession]);
+
+  const handleAddToSession = useCallback((exercise: Exercise) => addToSession(exercise), [addToSession]);
+
+  const listData = useMemo<ExerciseListData>(() => ({
+    exercises: filteredExercises,
+    onStart: handleStart,
+    onAddToSession: handleAddToSession,
+  }), [filteredExercises, handleStart, handleAddToSession]);
 
   useEffect(() => {
     listRef.current?.scrollToItem(0, 'start');
