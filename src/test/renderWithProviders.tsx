@@ -21,6 +21,7 @@ export function renderWithProviders(ui: ReactNode, { route = '/', routines }: Pr
 }
 
 export function resetWorkoutStores() {
-  useSessionStore.setState({ queue: [], currentIndex: -1, isRunning: false, elapsed: 0 });
+  useSessionStore.setState({ queue: [], currentIndex: -1, isRunning: false, elapsed: 0,
+    restDuration: 0, isResting: false, restRemaining: 0 });
   useSavedStore.setState({ ids: [] });
 }

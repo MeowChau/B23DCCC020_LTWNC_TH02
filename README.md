@@ -26,11 +26,21 @@ npm.cmd run preview
 - [x] **Phần 1:** khung React Router v6, kho 10.000 bài tập, danh sách ảo hóa, tìm kiếm debounce, lọc, sắp xếp và tối ưu render.
 - [x] **Phần 2:** đồng hồ buổi tập bằng Zustand, thanh đồng hồ và bài tập đã lưu với persist.
 - [x] **Phần 3:** giáo án với Context + useReducer, middleware log, sáng/tối và lazy loading.
-- [x] **Phần 4:** 60 test bằng Vitest/Testing Library trong 15 file; coverage Lines 100% cho `features` và `utils`, ảnh `coverage.png`.
+- [x] **Phần 4:** bộ test Vitest/Testing Library và coverage; sau thử thách thêm có **74 test trong 17 file**, Lines 100% cho `features` và `utils`, ảnh `coverage.png`.
+- [x] **Thử thách thêm:** nghỉ 10 giây, đo React DevTools Profiler, middleware devtools và phím Space.
+- [x] **Giao diện:** nền trắng ngà, điểm nhấn cam, bố cục riêng cho kho/đã lưu/giáo án, hỗ trợ sáng/tối và màn hình nhỏ.
 
-Đã hoàn thành cả bốn phần. Ứng dụng có kho bài tập, bài đã lưu, danh sách giáo án và chi tiết giáo án. Kho có ô chọn Giáo án đang chọn và nút + Giáo án trên từng dòng. Thanh đồng hồ cố định ở đáy mọi trang; nút trên menu đổi giao diện sáng/tối.
+Đã hoàn thành cả bốn phần và bốn thử thách thêm. Ứng dụng có kho bài tập, bài đã lưu, danh sách giáo án và chi tiết giáo án. Kho có ô chọn Giáo án đang chọn và nút + Giáo án trên từng dòng. Thanh đồng hồ cố định ở đáy mọi trang; nút trên menu đổi giao diện sáng/tối.
 
 Bộ test nộp bài đặt cạnh nguồn trong `src`, tên test bằng tiếng Việt. `npm test`, `npm run coverage` và `npm run build` đều đã chạy thành công. Kết quả cuối cùng và ảnh coverage nằm ở mục Phần 4 bên dưới; các mục trước ghi lại cách tự kiểm tra từng phần.
+
+## Giao diện
+
+Dùng ảnh tham khảo để chọn tông trắng ngà `#f8f6f2`, thẻ trắng, viền ấm và màu cam cho thao tác chính. Chữ dùng Be Vietnam Pro, khoảng cách và góc bo thống nhất. Chế độ tối chuyển sang nền than ấm và cam nhạt.
+
+Kho bài tập giữ bảng gọn với danh sách ảo. Trang Đã lưu dùng thẻ bài và tổng thời lượng thực tế; trang Giáo án chia form tạo mới và danh sách, chi tiết chia bài tập và form đổi tên. Thanh đồng hồ cố định có điều khiển, tiến trình và gợi ý phím Space. Các số đếm lấy từ dữ liệu hiện có.
+
+Đã xem trực tiếp trên Chrome ở desktop, chế độ tối, màn hình rộng 390px và 320px: các trang không làm tràn ngang toàn trang, bảng kho có vùng vuốt riêng. Biểu tượng SVG dùng chung, nền phẳng và màu nhấn tiết chế.
 
 ## Phần 1: triển khai và tự kiểm tra
 
@@ -72,7 +82,7 @@ Chạy dev hoặc preview rồi kiểm tra:
 | Bắt đầu từ kho | Chụp danh sách đã lọc/sắp xếp vào queue, bắt đầu đúng bài được bấm. Thay bộ lọc sau đó không làm đổi buổi đang tập. |
 | Điều khiển | Bắt đầu/Tạm dừng, Trước, Sau. Trước khi elapsed > 3 chỉ đặt lại bài; elapsed ≤ 3 lùi về bài trước. Bài cuối dừng đồng hồ. |
 | Thêm bài | `addToSession` thêm cuối queue theo ID, bỏ qua bài trùng; nút Bắt đầu ở thanh đồng hồ cũng khởi động được queue thêm thủ công. |
-| Tick | `setInterval` mỗi 1000ms khi đang chạy; cleanup khi tạm dừng hoặc unmount. `tick()` đọc state bằng `get()`, tự chuyển bài khi hết thời lượng. |
+| Tick | `setInterval` mỗi 1000ms khi đang chạy; cleanup khi tạm dừng hoặc unmount. `tick()` đọc state bằng `get()`; mặc định nghỉ 10 giây giữa bài rồi chuyển bài theo thử thách thêm. |
 | Giảm render | Chỉ `CountdownBar` đăng ký `elapsed`. Các component khác dùng selector riêng; mỗi dòng kho chỉ đăng ký trạng thái đã lưu của chính ID đó. |
 | Đã lưu | Store riêng dùng `persist`, chỉ ghi `ids` vào localStorage key `workout-saved`. ☆/★ có nhãn `Lưu bài tập`/`Bỏ lưu` và `aria-pressed`. |
 | Trang `/saved` | Danh sách không ảo hóa, có Tập tất cả và trạng thái rỗng. Bỏ lưu không làm thay đổi buổi tập đang chạy. |
@@ -82,7 +92,7 @@ Chạy dev hoặc preview rồi kiểm tra:
 1. Bấm Bắt đầu ở e2: thanh dưới có **Đang tập: Kéo tạ đơn 1 – HLV Phương Anh**, **Còn lại: 1:07**, **Buổi tập: 10000 bài**. Sau 5 giây còn **1:02**.
 2. Bấm Tạm dừng, chờ 3 giây: thời gian giữ nguyên. Bấm Bắt đầu để tiếp tục.
 3. Bấm Sau: sang **Gập tạ đơn 1 – HLV Đức Anh**, còn **1:44**. Chuyển bài khi đang tạm dừng vẫn giữ trạng thái tạm dừng.
-4. Bắt đầu e1 và tập hết 30 giây: tự sang e2. Ở e2, tập hơn 3 giây rồi bấm Trước: e2 trở về 1:07; tập 3 giây rồi bấm Trước: trở về e1.
+4. Bắt đầu e1: hết 30 giây hiện **Nghỉ còn: 0:10**, hết 10 giây nghỉ mới sang e2. Ở e2, tập hơn 3 giây rồi bấm Trước: e2 trở về 1:07; tập 3 giây rồi bấm Trước: trở về e1.
 5. Tìm `đẩy`, sắp xếp thời lượng tăng dần rồi bắt đầu một dòng: queue có 1250 bài, Sau đi đúng bài tiếp theo trong kết quả. Xóa bộ lọc không đổi queue đã bắt đầu.
 6. Bấm ☆ ở e1 và e3, mở Đã lưu rồi F5: vẫn có hai bài; Local Storage → `workout-saved` có hai ID này. Buổi tập không được persist và trở về chưa bắt đầu khi F5.
 7. Bấm Tập tất cả ở Đã lưu: queue có đúng e1 và e3. Hết bài cuối, đồng hồ dừng ở **0:00**. Bấm Bắt đầu có thể tập lại bài đó.
@@ -146,7 +156,7 @@ npm.cmd run coverage
 npm.cmd run build
 ```
 
-Kết quả cuối: **15 file test, 60 test đều đạt**, build production và kiểm tra TypeScript thành công. Không cần chạy server hay kết nối API để chạy test. Các test dùng dữ liệu cố định, fake timers cho debounce/đồng hồ và `userEvent` cho tương tác form/nút.
+Kết quả hiện tại, gồm thử thách thêm: **17 file test, 74 test đều đạt**, build production và kiểm tra TypeScript thành công. Không cần chạy server hay kết nối API để chạy test. Các test dùng dữ liệu cố định, fake timers cho debounce/đồng hồ và `userEvent` cho tương tác form/nút.
 
 Các trường hợp bắt buộc trong đề đều có file tương ứng:
 
@@ -168,17 +178,58 @@ Các file còn lại kiểm tra kho bài tập, logger, Context, chi tiết giá
 
 | Phạm vi | Lines đã chạy | Lines | Yêu cầu |
 | --- | ---: | ---: | ---: |
-| `src/features` — đủ 13 file nguồn | 240/240 | **100%** | ≥ 70% |
+| `src/features` — đủ 13 file nguồn | 261/261 | **100%** | ≥ 70% |
 | `src/utils` | 4/4 | **100%** | ≥ 70% |
-| Toàn bộ phạm vi đo | 244/244 | **100%** | ≥ 70% |
+| Toàn bộ phạm vi đo | 265/265 | **100%** | ≥ 70% |
 
-Trong phạm vi trên: Statements **99,38%**, Branches **96,96%**, Functions **100%**. Cấu hình V8 đo tất cả mã nguồn trong `features` và `utils`, loại file test khỏi báo cáo, kiểm tra ngưỡng Lines 70% riêng cho hai thư mục và xuất text, HTML, JSON summary.
+Trong phạm vi trên: Statements **99,43%**, Branches **97,46%**, Functions **100%**. Cấu hình V8 đo tất cả mã nguồn trong `features` và `utils`, loại file test khỏi báo cáo, kiểm tra ngưỡng Lines 70% riêng cho hai thư mục và xuất text, HTML, JSON summary.
 
 - Báo cáo HTML: `coverage/index.html`, mở sau khi chạy coverage.
 - Số liệu JSON: `coverage/coverage-summary.json`.
 - Ảnh nộp bài: **`coverage.png` tại gốc repo**, chụp trực tiếp bảng HTML từ lượt chạy coverage trên; ảnh được đưa vào Git, thư mục báo cáo `coverage/` được bỏ qua.
 
 ![Bảng coverage V8: features và utils đạt 100% Lines](coverage.png)
+
+## Thử thách thêm
+
+### Nghỉ giữa bài
+
+Store có `restDuration`, `isResting`, `restRemaining`; mặc định `DEFAULT_REST_DURATION = 10`. Hết bài thì đếm nghỉ đủ 10 giây mới sang bài tiếp theo, không nghỉ sau bài cuối. Thanh đồng hồ hiển thị thời gian nghỉ và bài tiếp theo.
+
+Tạm dừng/Space khi nghỉ giữ nguyên số giây còn lại. Sau bỏ qua nghỉ; Trước trong lúc nghỉ bắt đầu lại bài vừa xong; buổi mới xóa trạng thái nghỉ cũ. Thời gian nghỉ tính riêng với tổng thời lượng các bài trong giáo án.
+
+Test mới kiểm tra đủ 10 tick, pause/resume, bỏ qua nghỉ và kết thúc. Các ca hồi quy cơ bản đặt `restDuration = 0`; các ca thử thách kiểm tra mặc định 10 giây. Kiểm tra render xác nhận danh sách/nút không render lại mỗi giây cả khi tập lẫn nghỉ.
+
+### React DevTools Profiler
+
+Đo bằng backend Profiler chính thức **`react-devtools-core@8.0.0`**, lấy `commitData.duration` của một commit mount. Hai chế độ dùng cùng `LibraryPage`, dữ liệu 10.000 bài, bộ lọc, Provider/Router và component dòng; chỉ thay phần danh sách.
+
+| Chế độ | Dòng DOM | Render mount trung vị |
+| --- | ---: | ---: |
+| Bỏ `FixedSizeList`, render thường | 10.000 | **2.389,0 ms** |
+| Dùng `FixedSizeList` | 12 | **17,5 ms** |
+
+Bỏ một warm-up mỗi chế độ, đo 5 lượt/chế độ với thứ tự đan xen, lấy trung vị. Số liệu đã đo lại sau khi đổi giao diện. Chrome 156.0.8078.80, React 19.3.1 development, Node 24.11.0, Windows/i7-12700H, viewport 1440×1100, CPU throttling 1×, StrictMode tắt trong trang đo. Chỉ số trên là thời gian render, tải mạng và paint được tính riêng; kết quả có thể khác giữa các lần đo.
+
+Từng mẫu và môi trường ở [`profiling/results.json`](profiling/results.json); dữ liệu backend gốc của mẫu trung vị ở [`plain.json.gz`](profiling/raw/plain.json.gz), [`virtual.json.gz`](profiling/raw/virtual.json.gz). Xem [cách đo và chạy lại](profiling/README.md). Backend Profiler chỉ dùng ở trang đo dành cho phát triển.
+
+```powershell
+npm.cmd run profile:measure
+```
+
+Script tự mở/đóng Chrome headless riêng, tự chạy server nếu cần, cập nhật JSON và dữ liệu gốc. Có thể mở trang đo bằng `npm.cmd run profile:serve`, rồi truy cập `http://127.0.0.1:5176/profiling.html` để bấm từng chế độ.
+
+### Zustand devtools
+
+Store buổi tập bọc `devtools`; store bài đã lưu dùng `devtools(persist(...))`. Hai kết nối **Workout Session**, **Workout Saved** chỉ bật khi dev. Các action có tên rõ như `session/startSession`, `session/startRest`, `session/tickRest`, `session/toggleRun`, `session/next`, `session/finish`, `saved/toggle`.
+
+Chạy `npm.cmd run dev`, mở ứng dụng trong trình duyệt có extension Redux DevTools, mở bảng Redux và chọn tên store để xem lịch sử action/state. Test kiểm tra kết nối, action/state, persist và việc tắt kết nối ở production.
+
+### Phím Space
+
+`useSessionKeyboardShortcut` đăng ký `keydown` và gỡ đúng handler khi unmount. Space Bắt đầu/Tạm dừng cả khi tập lẫn nghỉ; ngăn cuộn trang khi xử lý phím. Bỏ qua input, textarea, select, contenteditable, textbox/combobox, nút/link, phím lặp, IME, tổ hợp phím và sự kiện đã được xử lý. Space khi focus nút dùng hành vi bàn phím của chính nút, tránh toggle hai lần.
+
+Test kiểm tra các vùng nhập liệu, toggle và `removeEventListener`. Cả **8 nhóm kiểm tra Chrome cho thử thách** đều đạt, gồm nhập khoảng trắng bằng phím thật, Space trên nút, thời gian nghỉ và giao diện điện thoại. Ảnh coverage đã được cập nhật sau các thay đổi.
 
 ## Cấu trúc hiện tại
 
@@ -195,6 +246,7 @@ src/
   contexts/ThemeContext.tsx   Theme riêng, value được memo hóa
   data/exercises.ts           Bộ sinh dữ liệu và 10.000 bài tập
   hooks/useDebounce.ts        Hook debounce generic
+  hooks/useSessionKeyboardShortcut.ts Phím Space và cleanup listener
   utils/format.ts             formatDuration
   features/library/
     LibraryPage.tsx           Tìm kiếm, bộ lọc và FixedSizeList
@@ -215,9 +267,9 @@ src/
     RoutineDetailPage.tsx     Chi tiết, đổi tên, bỏ bài, tổng giờ và tập
 ```
 
-15 file `*.test.ts` / `*.test.tsx` được đặt cạnh mã nguồn tương ứng. `coverage.png` ở gốc repo.
+17 file `*.test.ts` / `*.test.tsx` được đặt cạnh mã nguồn tương ứng. `coverage.png` ở gốc repo; `profiling/` chứa kết quả và dữ liệu đo, `scripts/profile-library.mjs` chạy phép đo tự động.
 
-## Commit Phần 4
+## Commit thử thách thêm và giao diện
 
 Repository Git cục bộ đã được khởi tạo trên nhánh `main`. Remote `origin` trỏ đến repository GitHub public [MeowChau/B23DCCC020_LTWNC_TH02](https://github.com/MeowChau/B23DCCC020_LTWNC_TH02).
 
@@ -225,7 +277,7 @@ Repository Git cục bộ đã được khởi tạo trên nhánh `main`. Remote
 cd D:\TH_Web_Nc\TH2\workout-timer
 git status
 git add .
-git commit -m "Phan 4"
+git commit -m "Thu thach them va giao dien"
 git push
 ```
 

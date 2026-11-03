@@ -1,14 +1,73 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EXERCISES } from '../../data/exercises';
-import { useSessionStore } from './useSessionStore';
+import { DEFAULT_REST_DURATION, useSessionStore } from './useSessionStore';
 
 const exercises = EXERCISES.slice(0, 3);
 
 beforeEach(() => {
-  useSessionStore.setState({ queue: [], currentIndex: -1, isRunning: false, elapsed: 0 });
+  useSessionStore.setState({ queue: [], currentIndex: -1, isRunning: false, elapsed: 0,
+    restDuration: 0, isResting: false, restRemaining: 0 });
 });
 
 describe('Store buổi tập', () => {
+  it('mặc định nghỉ 10 giây giữa bài theo thử thách thêm', () => {
+    expect(useSessionStore.getInitialState().restDuration).toBe(DEFAULT_REST_DURATION);
+    expect(DEFAULT_REST_DURATION).toBe(10);
+  });
+
+  it('hết bài bắt đầu nghỉ đủ 10 tick rồi mới chuyển sang bài kế tiếp', () => {
+    useSessionStore.setState({ restDuration: 10 });
+    useSessionStore.getState().startSession(exercises, 0);
+    useSessionStore.setState({ elapsed: 29 });
+    useSessionStore.getState().tick();
+    expect(useSessionStore.getState()).toMatchObject({ currentIndex: 0, elapsed: 30, isResting: true, restRemaining: 10 });
+    for (let remaining = 9; remaining >= 1; remaining--) {
+      useSessionStore.getState().tick();
+      expect(useSessionStore.getState()).toMatchObject({ currentIndex: 0, isResting: true, restRemaining: remaining });
+    }
+    useSessionStore.getState().tick();
+    expect(useSessionStore.getState()).toMatchObject({ currentIndex: 1, elapsed: 0, isRunning: true, isResting: false, restRemaining: 0 });
+  });
+
+  it('tạm dừng khi nghỉ giữ nguyên thời gian và tiếp tục đếm đúng', () => {
+    useSessionStore.setState({ restDuration: 10 });
+    useSessionStore.getState().startSession(exercises, 0);
+    useSessionStore.setState({ elapsed: 29 });
+    useSessionStore.getState().tick();
+    useSessionStore.getState().tick();
+    useSessionStore.getState().toggleRun();
+    useSessionStore.getState().tick();
+    expect(useSessionStore.getState()).toMatchObject({ isRunning: false, restRemaining: 9, elapsed: 30 });
+    useSessionStore.getState().toggleRun();
+    useSessionStore.getState().tick();
+    expect(useSessionStore.getState()).toMatchObject({ isRunning: true, restRemaining: 8, elapsed: 30 });
+  });
+
+  it('nút Sau bỏ qua nghỉ, nút Trước tập lại bài vừa xong và buổi mới xóa nghỉ cũ', () => {
+    useSessionStore.setState({ restDuration: 10 });
+    useSessionStore.getState().startSession(exercises, 0);
+    useSessionStore.setState({ elapsed: 29 });
+    useSessionStore.getState().tick();
+    useSessionStore.getState().prev();
+    expect(useSessionStore.getState()).toMatchObject({ currentIndex: 0, elapsed: 0, isResting: false, restRemaining: 0 });
+    useSessionStore.setState({ elapsed: 29 });
+    useSessionStore.getState().tick();
+    useSessionStore.getState().next();
+    expect(useSessionStore.getState()).toMatchObject({ currentIndex: 1, elapsed: 0, isResting: false, restRemaining: 0 });
+    useSessionStore.setState({ elapsed: 66 });
+    useSessionStore.getState().tick();
+    useSessionStore.getState().startSession(exercises, 2);
+    expect(useSessionStore.getState()).toMatchObject({ currentIndex: 2, elapsed: 0, isResting: false, restRemaining: 0 });
+  });
+
+  it('không nghỉ sau bài cuối kể cả khi thời gian nghỉ được bật', () => {
+    useSessionStore.setState({ restDuration: 10 });
+    useSessionStore.getState().startSession(exercises, 2);
+    useSessionStore.setState({ elapsed: 103 });
+    useSessionStore.getState().tick();
+    expect(useSessionStore.getState()).toMatchObject({ currentIndex: 2, elapsed: 104, isRunning: false, isResting: false, restRemaining: 0 });
+  });
+
   it('bắt đầu đúng bài, đặt lại thời gian và giữ queue độc lập với mảng đầu vào', () => {
     useSessionStore.setState({ elapsed: 15 });
     useSessionStore.getState().startSession(exercises, 1);

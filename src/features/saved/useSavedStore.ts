@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
 export interface SavedState {
   ids: string[];
@@ -7,19 +7,19 @@ export interface SavedState {
 }
 
 export const useSavedStore = create<SavedState>()(
-  persist(
+  devtools(persist(
     (set) => ({
       ids: [],
       toggle: (id) => set((state) => ({
         ids: state.ids.includes(id)
           ? state.ids.filter((savedId) => savedId !== id)
           : [...state.ids, id],
-      })),
+      }), false, 'saved/toggle'),
     }),
     {
       name: 'workout-saved',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ ids: state.ids }),
     },
-  ),
+  ), { name: 'Workout Saved', enabled: import.meta.env.DEV, anonymousActionType: 'saved/setState' }),
 );

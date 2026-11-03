@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { act, fireEvent, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EXERCISES } from '../../data/exercises';
@@ -23,6 +24,18 @@ function search(keyword: string) {
 }
 
 describe('Kho bài tập', () => {
+  it('chế độ đối chứng không ảo hóa vẫn hiển thị đúng kết quả lọc', () => {
+    function ComparisonFixture() {
+      const [virtualized, setVirtualized] = useState(true);
+      return <><button onClick={() => setVirtualized(false)}>Danh sách thường</button><LibraryPage virtualized={virtualized} /></>;
+    }
+    renderWithProviders(<ComparisonFixture />);
+    search('Đẩy tạ đơn 125');
+    expect(screen.getByRole('status')).toHaveTextContent('Tìm thấy 1 bài tập');
+    fireEvent.click(screen.getByRole('button', { name: 'Danh sách thường' }));
+    expect(screen.getByRole('rowgroup')).toHaveTextContent('Đẩy tạ đơn 125');
+  });
+
   it('ảo hóa 10.000 bài, debounce 300ms và lọc đúng tên, HLV, nhóm cơ', () => {
     const view = renderWithProviders(<LibraryPage />);
     expect(screen.getByRole('status')).toHaveTextContent('Tìm thấy 10000 bài tập');

@@ -29,7 +29,8 @@ vi.mock('../library/ExerciseRow', async (importOriginal) => {
 
 beforeEach(() => {
   vi.useFakeTimers();
-  useSessionStore.setState({ queue: [], currentIndex: -1, elapsed: 0, isRunning: false });
+  useSessionStore.setState({ queue: [], currentIndex: -1, elapsed: 0, isRunning: false,
+    restDuration: 0, isResting: false, restRemaining: 0 });
   useSavedStore.setState({ ids: [] });
   probes.library = 0;
   probes.controls = 0;
@@ -38,6 +39,27 @@ beforeEach(() => {
 
 
 describe('Kiểm tra hồi quy Phần 2 tại máy phát triển', () => {
+  it('hiển thị đếm nghỉ, tạm dừng trong lúc nghỉ và chỉ sang bài sau khi hết nghỉ', () => {
+    useSessionStore.setState({ restDuration: 10 });
+    useSessionStore.getState().startSession(EXERCISES.slice(0, 2), 0);
+    render(<SessionBar />);
+    act(() => vi.advanceTimersByTime(30000));
+    expect(screen.getByText('NGHỈ GIỮA BÀI')).toBeInTheDocument();
+    expect(screen.getByText('0:10')).toBeInTheDocument();
+    expect(screen.getByRole('progressbar', { name: 'Tiến trình nghỉ' })).toHaveAttribute('aria-valuenow', '0');
+    fireEvent.click(screen.getByRole('button', { name: 'Tạm dừng' }));
+    act(() => vi.advanceTimersByTime(5000));
+    expect(screen.getByText('0:10')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu' }));
+    act(() => vi.advanceTimersByTime(9000));
+    expect(screen.getByText('0:01')).toBeInTheDocument();
+    expect(useSessionStore.getState().currentIndex).toBe(0);
+    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.queryByText('NGHỈ GIỮA BÀI')).not.toBeInTheDocument();
+    expect(screen.getByText('1:07')).toBeInTheDocument();
+    expect(useSessionStore.getState().currentIndex).toBe(1);
+  });
+
   it('chưa có buổi tập hiển thị 0:00 và khóa các nút điều khiển', () => {
     render(<SessionBar />);
     expect(screen.getByText('Chưa bắt đầu buổi tập')).toBeInTheDocument();
@@ -93,6 +115,15 @@ describe('Kiểm tra hồi quy Phần 2 tại máy phát triển', () => {
     for (let second = 0; second < 5; second++) act(() => vi.advanceTimersByTime(1000));
     expect(useSessionStore.getState().elapsed).toBe(5);
     expect(screen.getByText('1:02')).toBeInTheDocument();
+    expect(probes.library).toBe(0);
+    expect(probes.controls).toBe(0);
+    expect(probes.rows).toEqual([]);
+    useSessionStore.setState({ restDuration: 10, elapsed: EXERCISES[1].duration - 1 });
+    act(() => vi.advanceTimersByTime(1000));
+    expect(useSessionStore.getState().isResting).toBe(true);
+    probes.library = 0; probes.controls = 0; probes.rows = [];
+    for (let second = 0; second < 3; second++) act(() => vi.advanceTimersByTime(1000));
+    expect(useSessionStore.getState().restRemaining).toBe(7);
     expect(probes.library).toBe(0);
     expect(probes.controls).toBe(0);
     expect(probes.rows).toEqual([]);

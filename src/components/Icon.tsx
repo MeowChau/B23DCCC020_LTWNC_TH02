@@ -17,6 +17,9 @@ const paths = {
   edit: 'm15 4 5 5M3 21l5-1L21 7a2 2 0 0 0-4-4L4 16l-1 5Z',
   moon: 'M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z',
   sun: 'M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z',
+  chevron: 'm9 5 7 7-7 7',
+  person: 'M20 21v-2a7 7 0 0 0-14 0v2M17 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z',
+  shield: 'M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7l-9-4Zm-4 9 3 3 5-5',
 } as const;
 
 interface IconProps extends SVGProps<SVGSVGElement> {

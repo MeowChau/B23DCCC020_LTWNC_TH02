@@ -1,10 +1,11 @@
 import { lazy, Suspense } from 'react';
-import { Link, NavLink, Route, Routes } from 'react-router-dom';
+import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import type { NavLinkRenderProps } from 'react-router-dom';
 import { Icon } from './components/Icon';
 import LibraryPage from './features/library/LibraryPage';
 import SessionBar from './features/session/SessionBar';
 import ThemeToggle from './components/ThemeToggle';
+import { useSavedStore } from './features/saved/useSavedStore';
 
 const SavedPage = lazy(() => import('./features/saved/SavedPage'));
 const RoutinesPage = lazy(() => import('./features/routines/RoutinesPage'));
@@ -12,6 +13,18 @@ const RoutineDetailPage = lazy(() => import('./features/routines/RoutineDetailPa
 
 function navLinkClass({ isActive }: NavLinkRenderProps): string {
   return isActive ? 'nav-link active' : 'nav-link';
+}
+
+function SavedCount() {
+  const count = useSavedStore((state) => state.ids.length);
+  return <span className="nav-count" aria-hidden="true">{count}</span>;
+}
+
+function Breadcrumbs() {
+  const { pathname } = useLocation();
+  const label = pathname === '/' ? 'Kho bài tập' : pathname === '/saved' ? 'Bài tập đã lưu'
+    : pathname === '/routines' ? 'Giáo án' : pathname.startsWith('/routines/') ? 'Chi tiết giáo án' : 'Không tìm thấy trang';
+  return <div className="breadcrumbs"><Link to="/">Không gian tập luyện</Link><Icon name="chevron" width="12" height="12" /><span>{label}</span></div>;
 }
 
 function NotFoundPage() {
@@ -37,7 +50,7 @@ export default function App() {
           </Link>
           <nav aria-label="Điều hướng chính">
             <NavLink to="/" end className={navLinkClass}><Icon name="library" />Kho bài tập</NavLink>
-            <NavLink to="/saved" className={navLinkClass}><Icon name="saved" />Đã lưu</NavLink>
+            <NavLink to="/saved" className={navLinkClass} aria-label="Đã lưu"><Icon name="saved" />Đã lưu<SavedCount /></NavLink>
             <NavLink to="/routines" className={navLinkClass}><Icon name="routines" />Giáo án</NavLink>
           </nav>
           <ThemeToggle />
@@ -45,6 +58,7 @@ export default function App() {
       </header>
 
       <main id="main-content" className="main-container">
+        <Breadcrumbs />
         <Suspense fallback={<p className="route-loading" role="status">Đang tải trang...</p>}>
           <Routes>
             <Route path="/" element={<LibraryPage />} />
@@ -57,8 +71,8 @@ export default function App() {
       </main>
 
       <footer className="site-footer">
-        <span>Bấm giờ tập luyện</span>
-        <span>Tập đúng nhịp. Tiến từng ngày.</span>
+        <span className="footer-brand"><Icon name="dumbbell" width="15" height="15" /><strong>Bấm giờ</strong> tập luyện</span>
+        <span>Bài đã lưu và giáo án được giữ trên thiết bị này.</span>
       </footer>
       <SessionBar />
     </div>

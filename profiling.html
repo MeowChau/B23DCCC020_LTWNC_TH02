@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đo render kho bài tập · React DevTools Profiler</title>
+  </head>
+  <body>
+    <header style="padding:20px;font:14px system-ui;background:#fff;color:#26362e">
+      <strong>Đối chiếu render kho bài tập — React DevTools Profiler</strong>
+      <p>Trang đo dành cho phát triển. Hai chế độ dùng cùng dữ liệu, bộ lọc và component dòng.</p>
+      <button type="button" data-mode="plain">Đo 10.000 dòng thường</button>
+      <button type="button" data-mode="virtual">Đo FixedSizeList</button>
+      <output id="profile-result" style="display:block;margin-top:12px">Đang chuẩn bị Profiler...</output>
+    </header>
+    <main id="profile-root" class="main-container"></main>
+    <script src="/node_modules/react-devtools-core/dist/backend.js"></script>
+    <script>
+      // Hook chính thức phải được cài trước khi React được import.
+      const subscribers = new Set();
+      let pendingProfile;
+      window.ReactDevToolsBackend.initialize();
+      window.ReactDevToolsBackend.connectWithCustomMessagingProtocol({
+        onSubscribe: (listener) => subscribers.add(listener),
+        onUnsubscribe: (listener) => subscribers.delete(listener),
+        onMessage: (event, payload) => {
+          if (event === 'profilingData' && pendingProfile) {
+            pendingProfile(payload);
+            pendingProfile = undefined;
+          }
+        },
+      });
+      window.workoutDevtools = {
+        send(event, payload) { for (const listener of subscribers) listener({ event, payload }); },
+        readProfile(rendererID) {
+          return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('Không nhận được dữ liệu React DevTools Profiler')), 15000);
+            pendingProfile = (payload) => { clearTimeout(timeout); resolve(payload); };
+            this.send('getProfilingData', { rendererID });
+          });
+        },
+      };
+    </script>
+    <script type="module" src="/profiling/entry.jsx"></script>
+  </body>
+</html>

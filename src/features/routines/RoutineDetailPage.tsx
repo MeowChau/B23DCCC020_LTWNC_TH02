@@ -50,6 +50,7 @@ function RoutineExerciseItem({ exercise, index, onRemove }: {
   return (
     <li className="routine-exercise" data-exercise-id={exercise.id}>
       <span className="routine-exercise-number">{String(index + 1).padStart(2, '0')}</span>
+      <span className="routine-exercise-mark"><Icon name="dumbbell" width="20" height="20" /></span>
       <div className="routine-exercise-info"><h3>{exercise.name}</h3><p>HLV {exercise.trainer} <span>· {exercise.group}</span></p></div>
       <span className="duration">{formatDuration(exercise.duration)}</span>
       <button className="danger-button" type="button" onClick={handleRemove} aria-label={`Bỏ ${exercise.name}`}>Bỏ</button>
@@ -74,27 +75,33 @@ function RoutineDetail({ routine }: { routine: Routine }) {
       <Link className="text-link back-link" to="/routines"><span aria-hidden="true">←</span>Tất cả giáo án</Link>
       <section className="page-intro routine-detail-intro" aria-labelledby="routine-detail-title">
         <div>
-          <p className="eyebrow"><span />GIÁO ÁN CỦA BẠN</p>
+          <p className="eyebrow">CHI TIẾT GIÁO ÁN</p>
           <h1 id="routine-detail-title">{routine.name}</h1>
-          <p className="intro-description">{exercises.length} bài tập · Một kế hoạch dành riêng cho bạn.</p>
+          <p className="intro-description">{exercises.length} bài tập · Tập theo thứ tự trong danh sách.</p>
         </div>
         <button className="primary-button" type="button" onClick={handleStartAll} disabled={exercises.length === 0}>
           <Icon name="play" width="16" height="16" />Tập tất cả
         </button>
       </section>
 
-      <section className="library-panel routine-detail-panel" aria-label="Các bài trong giáo án">
-        <div className="routine-detail-toolbar"><h2>Danh sách bài tập</h2><Link className="text-link" to="/">Thêm bài từ kho <Icon name="plus" width="15" height="15" /></Link></div>
-        {exercises.length > 0 ? (
-          <ol className="routine-exercise-list">
-            {exercises.map((exercise, index) => <RoutineExerciseItem key={exercise.id} exercise={exercise} index={index} onRemove={handleRemoveExercise} />)}
-          </ol>
-        ) : (
-          <div className="routine-detail-empty"><Icon name="routines" width="30" height="30" /><h2>Giáo án chưa có bài tập</h2><p>Chọn giáo án này tại kho bài tập, rồi nhấn + Giáo án.</p></div>
-        )}
-        <p className="routine-total"><Icon name="clock" width="17" height="17" />Tổng thời gian: {Math.floor(totalDuration / 60)} phút {totalDuration % 60} giây</p>
-      </section>
-      <RoutineRenameForm routine={routine} />
+      <div className="routine-detail-workspace">
+        <section className="library-panel routine-detail-panel" aria-label="Các bài trong giáo án">
+          <div className="routine-detail-toolbar"><h2>Danh sách bài tập</h2><Link className="text-link" to="/">Thêm bài từ kho <Icon name="plus" width="15" height="15" /></Link></div>
+          {exercises.length > 0 ? (
+            <ol className="routine-exercise-list">
+              {exercises.map((exercise, index) => <RoutineExerciseItem key={exercise.id} exercise={exercise} index={index} onRemove={handleRemoveExercise} />)}
+            </ol>
+          ) : (
+            <div className="routine-detail-empty"><Icon name="routines" width="30" height="30" /><h2>Giáo án chưa có bài tập</h2><p>Chọn giáo án này tại kho bài tập, rồi nhấn + Giáo án.</p></div>
+          )}
+          <p className="routine-total"><Icon name="clock" width="17" height="17" />Tổng thời gian: {Math.floor(totalDuration / 60)} phút {totalDuration % 60} giây</p>
+        </section>
+        <aside className="routine-settings-panel">
+          <div className="section-heading"><h2>Thông tin giáo án</h2><Icon name="edit" width="16" height="16" /></div>
+          <RoutineRenameForm routine={routine} />
+          <p className="routine-create-note">Tên mới được lưu khi bạn bấm Đổi tên.</p>
+        </aside>
+      </div>
     </>
   );
 }

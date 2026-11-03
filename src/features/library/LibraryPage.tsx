@@ -1,5 +1,5 @@
 import { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ChangeEvent, HTMLAttributes } from 'react';
+import type { ChangeEvent, CSSProperties, HTMLAttributes } from 'react';
 import { FixedSizeList, areEqual } from 'react-window';
 import type { ListChildComponentProps } from 'react-window';
 import { Link } from 'react-router-dom';
@@ -14,6 +14,9 @@ import { useRoutineDispatch, useRoutines } from '../routines/RoutineContext';
 
 type SortOrder = 'default' | 'name' | 'duration';
 type GroupFilter = 'all' | MuscleGroup;
+
+const PLAIN_VIEWPORT_STYLE: CSSProperties = { height: 560, overflow: 'auto' };
+const PLAIN_ROW_STYLE: CSSProperties = { height: 56 };
 
 interface ExerciseListData {
   exercises: Exercise[];
@@ -46,7 +49,7 @@ function exerciseKey(index: number, data: ExerciseListData): string {
   return data.exercises[index].id;
 }
 
-export default function LibraryPage() {
+export default function LibraryPage({ virtualized = true }: { virtualized?: boolean }) {
   const [keyword, setKeyword] = useState('');
   const [group, setGroup] = useState<GroupFilter>('all');
   const [sort, setSort] = useState<SortOrder>('default');
@@ -128,9 +131,9 @@ export default function LibraryPage() {
     <>
       <section className="page-intro" aria-labelledby="page-title">
         <div>
-          <p className="eyebrow"><span />THƯ VIỆN TẬP LUYỆN</p>
-          <h1 id="page-title">Kho bài tập<span className="title-dot">.</span></h1>
-          <p className="intro-description">Tìm bài phù hợp. Sẵn sàng cho một buổi tập tốt hơn.</p>
+          <p className="eyebrow">THƯ VIỆN BÀI TẬP</p>
+          <h1 id="page-title">Kho bài tập</h1>
+          <p className="intro-description">Tìm theo bài tập, huấn luyện viên hoặc nhóm cơ để bắt đầu buổi tập.</p>
         </div>
         <div className="library-stats" aria-label="Thống kê kho bài tập">
           <div><strong>10.000</strong><span>bài tập</span></div>
@@ -181,7 +184,7 @@ export default function LibraryPage() {
           <p role="status" aria-live="polite">Tìm thấy <strong>{filteredExercises.length}</strong> bài tập</p>
           {hasFilters
             ? <button className="reset-button" type="button" onClick={handleReset}>Đặt lại bộ lọc <span aria-hidden="true">↺</span></button>
-            : <span className="results-note"><Icon name="clock" width="15" height="15" />Một khởi đầu cho mọi mục tiêu</span>}
+            : <span className="results-note">Chọn bài và bắt đầu tập luyện</span>}
         </div>
 
         {filteredExercises.length > 0 ? (
@@ -195,11 +198,17 @@ export default function LibraryPage() {
                 <span role="columnheader">Thời lượng</span>
                 <span role="columnheader" className="action-heading">Thao tác</span>
               </div>
-              <FixedSizeList ref={listRef} height={560} itemSize={56} width="100%"
+              {virtualized ? <FixedSizeList ref={listRef} height={560} itemSize={56} width="100%"
                 itemCount={filteredExercises.length} itemData={listData}
                 itemKey={exerciseKey} overscanCount={2} outerElementType={ListViewport}>
                 {VirtualExerciseRow}
-              </FixedSizeList>
+              </FixedSizeList> : (
+                <div role="rowgroup" style={PLAIN_VIEWPORT_STYLE}>
+                  {filteredExercises.map((exercise, index) => (
+                    <VirtualExerciseRow key={exercise.id} index={index} data={listData} style={PLAIN_ROW_STYLE} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -210,7 +219,7 @@ export default function LibraryPage() {
             <button className="reset-button" type="button" onClick={handleReset}>Đặt lại bộ lọc <Icon name="arrow" width="17" height="17" /></button>
           </div>
         )}
-        <div className="panel-footer"><span className="status-dot" /><span>Chọn nhịp độ phù hợp với bạn</span><span className="scroll-hint">Cuộn để khám phá thêm ↓</span></div>
+        <div className="panel-footer"><span>Kho bài tập · 10.000 bài</span><span className="scroll-hint">Cuộn để xem thêm <span className="mobile-scroll-hint"> · Vuốt ngang để xem thao tác</span> ↓</span></div>
       </section>
     </>
   );
